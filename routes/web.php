@@ -1,18 +1,24 @@
 <?php
 
+use App\Http\Controllers\Passkeys\AuthenticationController;
+use App\Http\Controllers\Passkeys\RegistrationController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/', function () {
-    return view('welcome');
+Route::post('logout', function () {
+    Auth::logout();
+
+    return redirect('/');
+});
+
+Route::prefix('auth/registration')->controller(RegistrationController::class)->group(function () {
+    Route::post('/options', 'generateOptions');
+    Route::post('/verify', 'verify');
+});
+
+Route::prefix('authentication')->controller(AuthenticationController::class)->group(function () {
+    Route::post('/options', 'generateOptions');
+    Route::post('/verify', 'verify');
 });

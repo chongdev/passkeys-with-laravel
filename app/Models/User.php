@@ -46,4 +46,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Passkey::class);
     }
+    
+    public function authenticators()
+    {
+        return $this->hasMany(Authenticator::class);
+    }
 }

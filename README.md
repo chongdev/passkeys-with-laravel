@@ -1,2 +1,6 @@
 
-## Use passkeys in Laravel app
+## Laravel Passkeys
+
+``` sh
+php artisan migrate:fresh --seed
+```

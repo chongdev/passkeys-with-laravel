@@ -230,6 +230,9 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
 
+        // "Webauthn" => Webauthn\Webauthn::class,
+        // "PublicKeyCredentialLoader" => Webauthn\PublicKeyCredentialLoader::class,
+        // "PublicKeyCredentialRpEntity" => Webauthn\PublicKeyCredentialRpEntity::class,
     ],
 
 ];
