@@ -4,6 +4,7 @@
         class="bg-gray-100 flex items-center justify-center rounded-lg hover:bg-gray-200 px-3 py-2"
         type="button"
         v-if="isBrowserSupported"
+        :disabled="isLoading"
     >
         <span>{{ "Add a passkey" }}</span>
     </button>
@@ -27,35 +28,61 @@ export default {
 
     data() {
         return {
+            isLoading: false,
             errors: {},
             isBrowserSupported: browserSupportsWebAuthn(),
         };
     },
 
+    mounted() {
+        if (!this.isBrowserSupported) {
+            this.$emit("error", "WebAuthn is not supported in this browser.");
+        }
+    },
+
     methods: {
         async submitRegister() {
-            if (!this.username) {
-                console.error("username is required");
-                return;
-            }
-            // console.log("submitRegister....");
+            this.isLoading = true;
+            try {
+                if (!this.username) {
+                    throw new Error(
+                        "Username is required for passkey registration."
+                    );
+                }
 
-            // Prompt the user to create a passkey
-            this.$http
-                .post("/auth/registration/options", {
-                    username: this.username,
-                })
-                .then((response) => startRegistration(response.data))
-                // Verify the data with the server
-                .then((attResp) =>
-                    this.$http.post("/auth/registration/verify", attResp)
-                )
-                .then((verificationResponse) => {
-                    console.log("verificationResponse", verificationResponse);
-                })
-                .catch((error) => {
-                    console.error("error", error);
+                const response = await this.$http.post(
+                    "/auth/registration/options",
+                    {
+                        username: this.username,
+                        userAgent: window.navigator.userAgent,
+                    }
+                );
+
+                const options = response.data;
+
+                // Start the registration process
+                const attResp = await startRegistration({
+                    ...options,
+                    useAutoRegister: true,
                 });
+
+                // Verify the data with the server
+                const verificationResponse = await this.$http.post(
+                    "/auth/registration/verify",
+                    attResp
+                );
+
+                if (verificationResponse.data?.verified) {
+                    window.location.reload();
+                } else {
+                    // Passkey registration failed
+                    throw new Error("Passkey registration failed.");
+                }
+            } catch {
+                //console.error("Error during passkey registration:", error);
+            } finally {
+                this.isLoading = false;
+            }
         },
     },
 };

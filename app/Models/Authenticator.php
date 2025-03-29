@@ -11,8 +11,10 @@ class Authenticator extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'credential_id',
         'public_key',
+        'last_used_at',
     ];
 
     protected $casts = [

@@ -179,14 +179,13 @@ class RegistrationController extends Controller
         //     'username' => $publicKeyCredentialSource->getUserHandle(),
         // ]);
 
-        $user = User::where('username', $publicKeyCredentialSource->getUserHandle())->firstOrFail();
+        // $user = User::where('username', $publicKeyCredentialSource->getUserHandle())->firstOrFail();
         $pkSourceRepo->saveCredentialSource($publicKeyCredentialSource);
 
         // Auth::login($user);
 
         return [
             'verified' => true,
-            'data' => $user,
         ];
     }
 }

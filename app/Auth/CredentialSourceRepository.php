@@ -40,9 +40,28 @@ class CredentialSourceRepository implements PublicKeyCredentialSourceRepository
             $publicKeyCredentialSource->getUserHandle()
         )->firstOrFail();
 
+        $authenticator = Authenticator::where(
+            'credential_id',
+            base64_encode($publicKeyCredentialSource->getPublicKeyCredentialId())
+        )->first();
+
+        if ($authenticator) {
+            // Update existing authenticator
+            $authenticator->public_key = $publicKeyCredentialSource->jsonSerialize();
+            $authenticator->last_used_at = now();
+            $authenticator->save();
+
+            return;
+        }
+
+        // Create new authenticator
+        $deviceName = $publicKeyCredentialSource->getTransports()[0] ?? 'unknown';
+
         $user->authenticators()->save(new Authenticator([
+            'name'          => $deviceName ?? '',
             'credential_id' => $publicKeyCredentialSource->getPublicKeyCredentialId(),
             'public_key'    => $publicKeyCredentialSource->jsonSerialize(),
+            'last_used_at'  => now(),
         ]));
     }
 }

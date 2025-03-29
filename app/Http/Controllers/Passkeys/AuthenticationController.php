@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 // Holy imports, Batman
 use App\Auth\CredentialSourceRepository;
+use App\Models\Authenticator;
 use App\Models\User;
 use Cose\Algorithm\Manager;
 use Cose\Algorithm\Signature\ECDSA\ES256;
@@ -169,5 +170,11 @@ class AuthenticationController extends Controller
             'verified' => true,
             'data' => $user,
         ];
+    }
+
+    public function destroy (Request $request, Authenticator $passkeys)
+    {
+        $passkeys->delete();
+        return back()->with('success', 'Passkey deleted successfully!');
     }
 }

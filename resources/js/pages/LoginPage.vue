@@ -10,7 +10,6 @@
     </div>
     <div v-else class="px-4 py-8 bg-white shadow sm:rounded-lg sm:px-10">
         <form class="space-y-6" @submit.prevent="submitLogin">
-            <h2 class="text-xl font-bold text-center">Log In</h2>
 
             <div>
                 <label
@@ -19,15 +18,46 @@
                 >
                     Username
                 </label>
-                <div class="mt-1">
-                    <input
-                        v-model="username"
-                        type="text"
-                        id="username"
-                        name="username"
-                        required
-                        class="block w-full px-3 py-2 text-base text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
-                    />
+
+                <div>
+                    <div class="relative mt-1 rounded-md shadow-sm">
+                        <input
+                            v-model="username"
+                            type="text"
+                            id="username"
+                            name="username"
+                            required
+                            class="block w-full px-3 py-2 placeholder-gray-400 border rounded-md appearance-none focus:outline-none sm:text-sm"
+                            :class="
+                                errors.username
+                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                                    : 'border-gray-300 focus:border-sky-500 focus:ring-sky-500'
+                            "
+                        />
+
+                        <div
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                            v-if="errors.username"
+                        >
+                            <svg
+                                class="w-5 h-5 text-red-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <p v-if="errors.username" class="text-red-500 text-sm mt-1">
+                        {{ errors.username }}
+                    </p>
                 </div>
             </div>
             <div>
@@ -46,7 +76,6 @@
 import {
     startAuthentication,
     browserSupportsWebAuthn,
-    platformAuthenticatorIsAvailable,
 } from "@simplewebauthn/browser";
 
 export default {
@@ -66,17 +95,17 @@ export default {
             alert("WebAuthn is not supported in this browser");
         }
 
-        this.getUsernameInPasskeys();
+        // this.getUsernameInPasskeys();
     },
 
     methods: {
-        async getUsernameInPasskeys() {
-            if (await platformAuthenticatorIsAvailable()) {
-                console.log("Platform authenticator is available");
-            } else {
-                console.log("Platform authenticator is not available");
-            }
-        },
+        // async getUsernameInPasskeys() {
+        //     if (await platformAuthenticatorIsAvailable()) {
+        //         console.log("Platform authenticator is available");
+        //     } else {
+        //         console.log("Platform authenticator is not available");
+        //     }
+        // },
         async submitLogin() {
             try {
                 const response = await this.$http.post(
@@ -91,6 +120,7 @@ export default {
                     throw new Error("Invalid authentication options received");
                 }
 
+                // useBrowserAutofill
                 const attResp = await startAuthentication(options);
 
                 const verificationResponse = await this.$http.post(
@@ -99,14 +129,16 @@ export default {
                 );
 
                 if (verificationResponse.data?.verified) {
-                    alert("Authentication successful");
                     return window.location.reload();
                 }
 
                 throw new Error("Authentication failed");
             } catch (error) {
-                alert("Something went wrong verifying the authentication.");
+                // alert("Something went wrong verifying the authentication.");
                 this.username = "";
+                this.errors = {
+                    username: error.message || "An error occurred",
+                };
             }
         },
     },
